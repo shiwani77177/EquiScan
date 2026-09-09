@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  # PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: screener-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: screener
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: screener123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d screener"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: screener-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # App (Frontend + Backend in one container) 
+  app:
+    build:
+      context: . # root of the project
+      dockerfile: Dockerfile
+    container_name: screener-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/screener
+      SPRING_DATASOURCE_USERNAME: app
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-screener123}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      ALPHAVANTAGE_API_KEY: ${ALPHAVANTAGE_API_KEY}
+      SPRING_PROFILES_ACTIVE: docker
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+    ports:
+      - "3000:80" # Nginx serves everything on port 80 → exposed as 3000
+
+volumes:
+  pgdata:
+  redisdata:

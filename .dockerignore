@@ -1,0 +1,33 @@
+# Dependencies (reinstalled in container)
+frontend/node_modules/
+backend/stock-screener/target/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker (don't copy ourselves)
+docker-compose.yml
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Test output
+coverage/
+test-results/

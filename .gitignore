@@ -1,0 +1,49 @@
+# ── Java / Maven ──────────────────────────────
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/timing.properties
+
+# ── Spring Boot ───────────────────────────────
+application-local.yml
+application-local.properties
+
+# ── Node / React ──────────────────────────────
+node_modules/
+dist/
+build/
+.vite/
+*.local
+
+# ── Environment / Secrets ─────────────────────
+.env
+.env.*
+!.env.example
+
+# ── IDE ───────────────────────────────────────
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# ── OS ────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Docker ────────────────────────────────────
+docker-compose.override.yml
+
+# ── Logs ──────────────────────────────────────
+*.log
+logs/
+
+# ── Test output ───────────────────────────────
+coverage/
+test-results/
+surefire-reports/
+
