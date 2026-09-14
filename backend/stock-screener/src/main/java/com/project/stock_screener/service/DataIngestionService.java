@@ -1,15 +1,16 @@
 package com.project.stock_screener.service;
 
-import com.project.stock_screener.client.AlphaVantageClient;
-import com.project.stock_screener.dto.PriceData;
-import com.project.stock_screener.dto.StockData;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.project.stock_screener.client.AlphaVantageClient;
+import com.project.stock_screener.dto.PriceData;
+import com.project.stock_screener.dto.StockData;
 
 /* DataIngestionService — The orchestrator. Pulls data from Alpha Vantage
  * and writes it into PostgreSQL. */
@@ -28,16 +29,9 @@ public class DataIngestionService {
     private static final List<String> SEED_TICKERS = List.of(
             "AAPL",     // Apple
             "MSFT",     // Microsoft
-            "GOOGL",    // Alphabet (Google)
-            "AMZN",     // Amazon
+            "GOOGL",    // Google
             "NVDA",     // NVIDIA
-            "JPM",      // JPMorgan
-            "V",        // Visa
-            "JNJ",      // Johnson & Johnson
-            "UNH",      // UnitedHealth
-            "XOM",      // ExxonMobil
-            "WMT",      // Walmart
-            "DIS"       // Disney
+            "JPM"      // JPMorgan
     );
 
 
@@ -57,7 +51,7 @@ public class DataIngestionService {
      *                           This gives the database time to be fully ready
      * fixedDelay = 86400000 → Then run every 24 hours */
 
-    @Scheduled(initialDelay = 10000, fixedDelay = 86400000)
+    @Scheduled(cron = "0 0 19 * * MON-FRI", zone = "Asia/Kolkata")
     public void runIngestion() {
         log.info("═══════════════════════════════════════════════════");
         log.info("  Starting data ingestion for {} tickers", SEED_TICKERS.size());

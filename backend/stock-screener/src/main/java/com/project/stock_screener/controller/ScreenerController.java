@@ -15,6 +15,7 @@ import com.project.stock_screener.dto.ScreenRequest;
 import com.project.stock_screener.dto.ScreenResult;
 import com.project.stock_screener.screening.ScreenableFieldRegistry;
 import com.project.stock_screener.screening.ScreenerService;
+import com.project.stock_screener.service.DataIngestionService;
 
 /* ScreenerController — The REST API endpoints for stock screening. */
 @RestController
@@ -28,11 +29,15 @@ public class ScreenerController {
     // The field registry for the metadata endpoint
     private final ScreenableFieldRegistry fieldRegistry;
 
+    private final DataIngestionService ingestionService;
+
     /* Constructor — Spring injects both dependencies automatically. */
     public ScreenerController(ScreenerService screenerService,
-                              ScreenableFieldRegistry fieldRegistry) {
+                              ScreenableFieldRegistry fieldRegistry,
+                              DataIngestionService ingestionService) {
         this.screenerService = screenerService;
         this.fieldRegistry = fieldRegistry;
+        this.ingestionService = ingestionService;
     }
 
     //Sends the request
@@ -53,6 +58,13 @@ public class ScreenerController {
     public ResponseEntity<List<String>> getSectors() {
         List<String> sectors = screenerService.getSectors();
         return ResponseEntity.ok(sectors);
+    }
+
+    //Ingestion to trigger data from ALpha Vantage
+    @PostMapping("/admin/ingest")
+    public ResponseEntity<String> triggerIngestion() {
+        Thread.ofVirtual().start(() -> ingestionService.runIngestion());
+        return ResponseEntity.ok("Ingestion started in background. Check logs for progress.");
     }
 }
 
