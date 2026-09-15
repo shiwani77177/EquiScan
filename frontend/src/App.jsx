@@ -1,6 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
-import HomePage from "./pages/HomePage";
+import DashboardPage from "./pages/DashboardPage";
+import ScreenerPage from "./pages/ScreenerPage";
+import StocksPage from "./pages/StocksPage";
+import SectorsPage from "./pages/SectorsPage";
+import WatchlistPage from "./pages/WatchlistPage";
 import StockDetailPage from "./pages/StockDetailPage";
 
 export default function App() {
@@ -9,7 +13,11 @@ export default function App() {
       <div className="min-h-screen bg-slate-900">
         <Header />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/screener" element={<ScreenerPage />} />
+          <Route path="/stocks" element={<StocksPage />} />
+          <Route path="/sectors" element={<SectorsPage />} />
+          <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/stock/:ticker" element={<StockDetailPage />} />
         </Routes>
       </div>
