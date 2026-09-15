@@ -5,20 +5,24 @@ import useScreener from "../hooks/useScreener";
 // ── Number formatters ──────────────────────────────────────
 const fmtCurrency = (v) => {
   if (v == null) return "—";
-  if (Math.abs(v) >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (Math.abs(v) >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
-  if (Math.abs(v) >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
-  return `$${Number(v).toLocaleString()}`;
+  const num = Number(v);
+  if (Math.abs(num) >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+  if (Math.abs(num) >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+  if (Math.abs(num) >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+  return `$${num.toLocaleString()}`;
 };
 const fmtNum = (v, d = 2) => (v == null ? "—" : Number(v).toFixed(d));
 const fmtPct = (v) => (v == null ? "—" : `${Number(v).toFixed(2)}%`);
 const fmtVol = (v) => {
   if (v == null) return "—";
-  if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
-  if (v >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
-  return v.toLocaleString();
+  const num = Number(v);
+  if (num >= 1e6) return `${(num / 1e6).toFixed(1)}M`;
+  if (num >= 1e3) return `${(num / 1e3).toFixed(1)}K`;
+  return num.toLocaleString();
 };
 
+// Column definitions — map API response field names to display
+// The API returns camelCase names from the StockRow DTO
 const COLUMNS = [
   {
     key: "ticker",
@@ -30,7 +34,7 @@ const COLUMNS = [
   {
     key: "companyName",
     label: "Company",
-    fmt: (v) => v,
+    fmt: (v) => v || "—",
     align: "left",
     sortable: false,
     wide: true,
@@ -45,7 +49,7 @@ const COLUMNS = [
   {
     key: "price",
     label: "Price",
-    fmt: (v) => `$${fmtNum(v)}`,
+    fmt: (v) => (v != null ? `$${fmtNum(v)}` : "—"),
     align: "right",
     sortable: true,
   },
@@ -69,7 +73,7 @@ const COLUMNS = [
   {
     key: "dividendYield",
     label: "Div %",
-    fmt: fmtPct,
+    fmt: (v) => (v != null ? `${(Number(v) * 100).toFixed(2)}%` : "—"),
     align: "right",
     sortable: true,
   },
@@ -90,6 +94,23 @@ const COLUMNS = [
   },
 ];
 
+// Map frontend sort keys to backend column names
+// Frontend uses camelCase, backend expects snake_case for the SQL column
+const SORT_KEY_MAP = {
+  ticker: "ticker",
+  companyName: "company_name",
+  sector: "sector",
+  price: "price",
+  changePercent: "change_percent",
+  marketCap: "market_cap",
+  peRatio: "pe_ratio",
+  eps: "eps",
+  dividendYield: "dividend_yield",
+  volume: "volume",
+  rsi14: "rsi_14",
+  sma50: "sma_50",
+};
+
 export default function ResultsTable() {
   const navigate = useNavigate();
   const { results, sort, setSort, page, setPage, loading, error } =
@@ -97,9 +118,11 @@ export default function ResultsTable() {
   const { runScreen } = useScreener();
 
   const handleSort = (field) => {
+    // Convert camelCase display key to snake_case API key
+    const apiField = SORT_KEY_MAP[field] || field;
     const newDir =
-      sort.field === field && sort.direction === "desc" ? "asc" : "desc";
-    setSort({ field, direction: newDir });
+      sort.field === apiField && sort.direction === "desc" ? "asc" : "desc";
+    setSort({ field: apiField, direction: newDir });
     setTimeout(runScreen, 0);
   };
 
@@ -165,22 +188,26 @@ export default function ResultsTable() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-700">
-              {COLUMNS.map((col) => (
-                <th
-                  key={col.key}
-                  className={`px-4 py-3 font-medium text-slate-400 whitespace-nowrap
-                    ${col.align === "right" ? "text-right" : "text-left"}
-                    ${col.sortable ? "cursor-pointer hover:text-white select-none" : ""}`}
-                  onClick={() => col.sortable && handleSort(col.key)}
-                >
-                  {col.label}
-                  {col.sortable && sort.field === col.key && (
-                    <span className="ml-1 text-blue-400">
-                      {sort.direction === "asc" ? "↑" : "↓"}
-                    </span>
-                  )}
-                </th>
-              ))}
+              {COLUMNS.map((col) => {
+                const apiField = SORT_KEY_MAP[col.key] || col.key;
+                const isActive = sort.field === apiField;
+                return (
+                  <th
+                    key={col.key}
+                    className={`px-4 py-3 font-medium text-slate-400 whitespace-nowrap
+                      ${col.align === "right" ? "text-right" : "text-left"}
+                      ${col.sortable ? "cursor-pointer hover:text-white select-none" : ""}`}
+                    onClick={() => col.sortable && handleSort(col.key)}
+                  >
+                    {col.label}
+                    {col.sortable && isActive && (
+                      <span className="ml-1 text-blue-400">
+                        {sort.direction === "asc" ? "↑" : "↓"}
+                      </span>
+                    )}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -196,7 +223,8 @@ export default function ResultsTable() {
                   const formatted = col.fmt(val);
                   let colorClass = "";
                   if (col.color && val != null) {
-                    colorClass = val >= 0 ? "text-green-400" : "text-red-400";
+                    colorClass =
+                      Number(val) >= 0 ? "text-green-400" : "text-red-400";
                   }
                   return (
                     <td
@@ -231,6 +259,7 @@ export default function ResultsTable() {
           {Array.from({ length: Math.min(results.totalPages, 5) }, (_, i) => {
             const pageNum =
               Math.max(0, Math.min(page - 2, results.totalPages - 5)) + i;
+            if (pageNum < 0 || pageNum >= results.totalPages) return null;
             return (
               <button
                 key={pageNum}

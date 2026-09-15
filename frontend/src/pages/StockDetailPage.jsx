@@ -14,11 +14,14 @@ import { getStockDetail, getStockPrices } from "../services/api";
 
 const fmtCurrency = (v) => {
   if (v == null) return "—";
-  if (Math.abs(v) >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (Math.abs(v) >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
-  if (Math.abs(v) >= 1e6) return `$${(v / 1e6).toFixed(2)}M`;
-  return `$${Number(v).toFixed(2)}`;
+  const num = Number(v);
+  if (Math.abs(num) >= 1e12) return `$${(num / 1e12).toFixed(2)}T`;
+  if (Math.abs(num) >= 1e9) return `$${(num / 1e9).toFixed(2)}B`;
+  if (Math.abs(num) >= 1e6) return `$${(num / 1e6).toFixed(2)}M`;
+  return `$${num.toLocaleString()}`;
 };
+
+const fmtNum = (v, d = 2) => (v == null ? "—" : Number(v).toFixed(d));
 
 const StatCard = ({ label, value }) => (
   <div className="bg-slate-700/50 rounded-lg p-3">
@@ -38,12 +41,33 @@ export default function StockDetailPage() {
   useEffect(() => {
     setLoading(true);
     setError(null);
+
+    // Fetch stock detail and price history in parallel
     Promise.all([getStockDetail(ticker), getStockPrices(ticker, months)])
       .then(([detail, priceData]) => {
         setStock(detail);
-        setPrices(priceData);
+        // Convert price data: ensure numbers are actual numbers
+        // The API might return BigDecimal strings from PostgreSQL
+        const formattedPrices = (priceData || []).map((p) => ({
+          date: p.date,
+          open: p.open ? Number(p.open) : null,
+          high: p.high ? Number(p.high) : null,
+          low: p.low ? Number(p.low) : null,
+          close: p.close ? Number(p.close) : null,
+          volume: p.volume ? Number(p.volume) : null,
+          sma50: p.sma_50 ? Number(p.sma_50) : null,
+          sma200: p.sma_200 ? Number(p.sma_200) : null,
+        }));
+        setPrices(formattedPrices);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => {
+        console.error("Error fetching stock detail:", err);
+        setError(
+          err.response?.data?.error ||
+            err.message ||
+            "Failed to load stock data",
+        );
+      })
       .finally(() => setLoading(false));
   }, [ticker, months]);
 
@@ -51,6 +75,7 @@ export default function StockDetailPage() {
     return (
       <div className="max-w-5xl mx-auto px-6 py-12 text-center">
         <div className="inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-slate-400 mt-4">Loading {ticker}...</p>
       </div>
     );
   }
@@ -58,7 +83,7 @@ export default function StockDetailPage() {
   if (error || !stock) {
     return (
       <div className="max-w-5xl mx-auto px-6 py-12 text-center">
-        <p className="text-red-400">{error || "Stock not found"}</p>
+        <p className="text-red-400 text-lg">{error || "Stock not found"}</p>
         <Link
           to="/"
           className="text-blue-400 hover:underline mt-4 inline-block"
@@ -69,6 +94,23 @@ export default function StockDetailPage() {
     );
   }
 
+  // Safely get values — handle both camelCase and snake_case field names
+  // The API might return either depending on how Jackson serializes
+  const price = stock.price ?? stock.close;
+  const changePercent = stock.changePercent ?? stock.change_percent;
+  const companyName = stock.companyName ?? stock.company_name;
+  const marketCap = stock.marketCap ?? stock.market_cap;
+  const peRatio = stock.peRatio ?? stock.pe_ratio;
+  const eps = stock.eps;
+  const dividendYield = stock.dividendYield ?? stock.dividend_yield;
+  const debtToEquity = stock.debtToEquity ?? stock.debt_to_equity;
+  const roe = stock.roe;
+  const priceToBook = stock.priceToBook ?? stock.price_to_book;
+  const sma50 = stock.sma50 ?? stock.sma_50;
+  const sma200 = stock.sma200 ?? stock.sma_200;
+  const rsi14 = stock.rsi14 ?? stock.rsi_14;
+  const macd = stock.macd;
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-6 space-y-6">
       {/* Back link */}
@@ -78,26 +120,36 @@ export default function StockDetailPage() {
 
       {/* Company header */}
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between flex-wrap gap-4">
           <div>
             <h2 className="text-2xl font-bold text-white">{stock.ticker}</h2>
-            <p className="text-slate-400 mt-1">{stock.companyName}</p>
+            <p className="text-slate-400 mt-1">{companyName}</p>
             <p className="text-sm text-slate-500 mt-1">
               {stock.sector} · {stock.industry} · {stock.exchange}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-3xl font-bold text-white">
-              ${Number(stock.price).toFixed(2)}
-            </p>
-            <p
-              className={`text-lg font-semibold mt-1 ${
-                stock.changePercent >= 0 ? "text-green-400" : "text-red-400"
-              }`}
-            >
-              {stock.changePercent >= 0 ? "+" : ""}
-              {Number(stock.changePercent).toFixed(2)}%
-            </p>
+            {price != null ? (
+              <>
+                <p className="text-3xl font-bold text-white">
+                  ${Number(price).toFixed(2)}
+                </p>
+                {changePercent != null && (
+                  <p
+                    className={`text-lg font-semibold mt-1 ${
+                      Number(changePercent) >= 0
+                        ? "text-green-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {Number(changePercent) >= 0 ? "+" : ""}
+                    {Number(changePercent).toFixed(2)}%
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-2xl text-slate-500">Price unavailable</p>
+            )}
           </div>
         </div>
       </div>
@@ -106,48 +158,26 @@ export default function StockDetailPage() {
       <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Fundamentals</h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label="Market Cap" value={fmtCurrency(stock.marketCap)} />
-          <StatCard
-            label="P/E Ratio"
-            value={
-              stock.peRatio != null ? Number(stock.peRatio).toFixed(2) : "—"
-            }
-          />
-          <StatCard
-            label="EPS"
-            value={stock.eps != null ? `$${Number(stock.eps).toFixed(2)}` : "—"}
-          />
+          <StatCard label="Market Cap" value={fmtCurrency(marketCap)} />
+          <StatCard label="P/E Ratio" value={fmtNum(peRatio)} />
+          <StatCard label="EPS" value={eps != null ? `$${fmtNum(eps)}` : "—"} />
           <StatCard
             label="Dividend Yield"
             value={
-              stock.dividendYield != null
-                ? `${Number(stock.dividendYield).toFixed(2)}%`
+              dividendYield != null
+                ? `${(Number(dividendYield) * 100).toFixed(2)}%`
                 : "—"
             }
           />
-          <StatCard
-            label="Debt/Equity"
-            value={
-              stock.debtToEquity != null
-                ? Number(stock.debtToEquity).toFixed(2)
-                : "—"
-            }
-          />
+          <StatCard label="Debt/Equity" value={fmtNum(debtToEquity)} />
           <StatCard
             label="ROE"
-            value={stock.roe != null ? `${Number(stock.roe).toFixed(2)}%` : "—"}
+            value={roe != null ? `${(Number(roe) * 100).toFixed(1)}%` : "—"}
           />
-          <StatCard
-            label="P/B Ratio"
-            value={
-              stock.priceToBook != null
-                ? Number(stock.priceToBook).toFixed(2)
-                : "—"
-            }
-          />
+          <StatCard label="P/B Ratio" value={fmtNum(priceToBook)} />
           <StatCard
             label="Volume"
-            value={stock.volume?.toLocaleString() ?? "—"}
+            value={stock.volume ? Number(stock.volume).toLocaleString() : "—"}
           />
         </div>
       </div>
@@ -158,22 +188,10 @@ export default function StockDetailPage() {
           Technical Indicators
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard
-            label="SMA 50"
-            value={stock.sma50 != null ? Number(stock.sma50).toFixed(2) : "—"}
-          />
-          <StatCard
-            label="SMA 200"
-            value={stock.sma200 != null ? Number(stock.sma200).toFixed(2) : "—"}
-          />
-          <StatCard
-            label="RSI 14"
-            value={stock.rsi14 != null ? Number(stock.rsi14).toFixed(2) : "—"}
-          />
-          <StatCard
-            label="MACD"
-            value={stock.macd != null ? Number(stock.macd).toFixed(4) : "—"}
-          />
+          <StatCard label="SMA 50" value={fmtNum(sma50)} />
+          <StatCard label="SMA 200" value={fmtNum(sma200)} />
+          <StatCard label="RSI 14" value={fmtNum(rsi14)} />
+          <StatCard label="MACD" value={fmtNum(macd, 4)} />
         </div>
       </div>
 
@@ -208,6 +226,10 @@ export default function StockDetailPage() {
                   tick={{ fill: "#64748b", fontSize: 11 }}
                   tickLine={false}
                   axisLine={{ stroke: "#334155" }}
+                  tickFormatter={(d) => {
+                    const date = new Date(d);
+                    return `${date.getDate()}/${date.getMonth() + 1}`;
+                  }}
                 />
                 <YAxis
                   domain={["auto", "auto"]}
@@ -223,7 +245,10 @@ export default function StockDetailPage() {
                     borderRadius: 8,
                   }}
                   labelStyle={{ color: "#94a3b8" }}
-                  formatter={(v) => [`$${Number(v).toFixed(2)}`, "Close"]}
+                  formatter={(v, name) => {
+                    if (v == null) return ["-", name];
+                    return [`$${Number(v).toFixed(2)}`, name];
+                  }}
                 />
                 <Line
                   type="monotone"
@@ -231,6 +256,7 @@ export default function StockDetailPage() {
                   stroke="#3b82f6"
                   dot={false}
                   strokeWidth={2}
+                  name="Close"
                 />
                 <Line
                   type="monotone"
@@ -239,6 +265,8 @@ export default function StockDetailPage() {
                   dot={false}
                   strokeWidth={1}
                   strokeDasharray="4 4"
+                  name="SMA 50"
+                  connectNulls
                 />
                 <Line
                   type="monotone"
@@ -247,6 +275,8 @@ export default function StockDetailPage() {
                   dot={false}
                   strokeWidth={1}
                   strokeDasharray="4 4"
+                  name="SMA 200"
+                  connectNulls
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -270,7 +300,7 @@ export default function StockDetailPage() {
           </div>
         ) : (
           <p className="text-slate-500 text-center py-12">
-            No price data available
+            No price data available for this period
           </p>
         )}
       </div>
