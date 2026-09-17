@@ -1,4 +1,4 @@
-package com.project.stock_screener.screening.controller;
+package com.project.stock_screener.controller;
 
 import java.util.List;
 import java.util.Map;
@@ -17,21 +17,16 @@ import com.project.stock_screener.screening.ScreenableFieldRegistry;
 import com.project.stock_screener.screening.ScreenerService;
 import com.project.stock_screener.service.DataIngestionService;
 
-/* ScreenerController — The REST API endpoints for stock screening. */
+/* ScreenerController — REST API for screening, metadata, and ingestion triggers.*/
 @RestController
 @RequestMapping("/api/v1")
 @CrossOrigin
 public class ScreenerController {
 
-    // The screening service that runs queries
     private final ScreenerService screenerService;
-
-    // The field registry for the metadata endpoint
     private final ScreenableFieldRegistry fieldRegistry;
-
     private final DataIngestionService ingestionService;
 
-    /* Constructor — Spring injects both dependencies automatically. */
     public ScreenerController(ScreenerService screenerService,
                               ScreenableFieldRegistry fieldRegistry,
                               DataIngestionService ingestionService) {
@@ -40,31 +35,65 @@ public class ScreenerController {
         this.ingestionService = ingestionService;
     }
 
-    //Sends the request
+    // Screening Endpoints
+
     @PostMapping("/screen")
     public ResponseEntity<ScreenResult> screen(@RequestBody ScreenRequest request) {
         ScreenResult result = screenerService.screen(request);
         return ResponseEntity.ok(result);
     }
 
-    //Returns all available filter fields
     @GetMapping("/metadata/filters")
     public ResponseEntity<Map<String, ScreenableFieldRegistry.FieldDef>> getFilters() {
         return ResponseEntity.ok(fieldRegistry.allFields());
     }
 
-    //Returns all unique sector names
     @GetMapping("/metadata/sectors")
     public ResponseEntity<List<String>> getSectors() {
         List<String> sectors = screenerService.getSectors();
         return ResponseEntity.ok(sectors);
     }
 
-    //Ingestion to trigger data from ALpha Vantage
+    // Admin / Ingestion Endpoints
+
     @PostMapping("/admin/ingest")
-    public ResponseEntity<String> triggerIngestion() {
+    public ResponseEntity<Map<String, Object>> triggerIngestion() {
         Thread.ofVirtual().start(() -> ingestionService.runIngestion());
-        return ResponseEntity.ok("Ingestion started in background. Check logs for progress.");
+        return ResponseEntity.ok(Map.of(
+                "message", "Yahoo Finance price ingestion started in background",
+                "tickers", ingestionService.getAllTickers().size(),
+                "source", "Yahoo Finance",
+                "note", "Check docker logs for progress: docker logs -f screener-app"
+        ));
+    }
+
+    @PostMapping("/admin/ingest-fundamentals")
+    public ResponseEntity<Map<String, Object>> triggerFundamentals(
+            @RequestBody(required = false) Map<String, List<String>> body) {
+
+        // Get tickers from request body, or default to first 5
+        List<String> tickers;
+        if (body != null && body.containsKey("tickers")) {
+            tickers = body.get("tickers").stream().limit(5).toList();
+        } else {
+            tickers = ingestionService.getAllTickers().stream().limit(5).toList();
+        }
+
+        Thread.ofVirtual().start(() -> ingestionService.runFundamentalsIngestion(tickers));
+        return ResponseEntity.ok(Map.of(
+                "message", "Alpha Vantage fundamentals ingestion started in background",
+                "tickers", tickers,
+                "source", "Alpha Vantage",
+                "note", "Limited to 5 tickers per run (25 calls/day). Check docker logs for progress."
+        ));
+    }
+
+    @GetMapping("/admin/tickers")
+    public ResponseEntity<Map<String, Object>> getTrackedTickers() {
+        return ResponseEntity.ok(Map.of(
+                "count", ingestionService.getAllTickers().size(),
+                "tickers", ingestionService.getAllTickers()
+        ));
     }
 }
 
