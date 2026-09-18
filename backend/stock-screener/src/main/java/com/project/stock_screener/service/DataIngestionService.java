@@ -13,7 +13,34 @@ import com.project.stock_screener.client.YahooFinanceClient;
 import com.project.stock_screener.dto.PriceData;
 import com.project.stock_screener.dto.StockData;
 
-/* DataIngestionService — Orchestrates data fetching from multiple sources. */
+/**
+ * DataIngestionService — Orchestrates data fetching from multiple sources.
+ *
+ * DUAL SOURCE STRATEGY:
+ * ─────────────────────
+ * We use TWO data providers, each for what they're best at:
+ *
+ * 1. ALPHA VANTAGE → Company overview + fundamentals
+ *    Why: Has detailed fundamental data (P/E, EPS, ROE, debt/equity, etc.)
+ *    Limit: 25 calls/day free tier
+ *    When: Run rarely — fundamentals change quarterly, not daily
+ *
+ * 2. YAHOO FINANCE → Daily prices (OHLCV)
+ *    Why: NO API key, NO daily limit, NO rate limit
+ *    Speed: Can fetch 50 stocks in 30 seconds
+ *    Data: 15-minute delayed during market hours
+ *    When: Run daily after market close
+ *
+ * FLOW:
+ *   Yahoo Finance (prices) → daily_prices table
+ *   → TechnicalIndicatorService computes SMA, RSI, MACD
+ *   → technical_indicators table
+ *   → Refresh materialized view
+ *   → Screener sees updated data
+ *
+ *   Alpha Vantage (fundamentals) → stocks + fundamentals tables
+ *   → Run separately, only when needed (quarterly)
+ */
 @Service
 public class DataIngestionService {
 
