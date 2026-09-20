@@ -1,25 +1,130 @@
 @import "tailwindcss";
 
+/* ── Dark Theme (default) ────────────────────────────── */
+:root {
+  --bg-primary: #0f172a;
+  --bg-card: #111827;
+  --bg-card-hover: #1e293b;
+  --bg-input: rgba(51, 65, 85, 0.5);
+  --border-color: rgba(51, 65, 85, 0.5);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --header-bg: rgba(30, 41, 59, 0.95);
+}
+
+/* ── Light Theme ─────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-primary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-input: rgba(241, 245, 249, 0.8);
+  --border-color: rgba(203, 213, 225, 0.6);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --header-bg: rgba(255, 255, 255, 0.95);
+}
+
 body {
   margin: 0;
-  background-color: #0f172a;
-  color: #e2e8f0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   font-family:
     "Inter",
     system-ui,
     -apple-system,
     sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-/* Scrollbar styling */
+/* Light theme overrides for Tailwind dark classes */
+[data-theme="light"] .bg-slate-800,
+[data-theme="light"] .bg-slate-800\/80,
+[data-theme="light"] .bg-slate-800\/95 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .bg-slate-900 {
+  background-color: #f1f5f9 !important;
+}
+
+[data-theme="light"] .bg-\[\#111827\] {
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] .bg-gradient-to-br {
+  background: #ffffff !important;
+}
+
+[data-theme="light"] .text-white {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .text-slate-200,
+[data-theme="light"] .text-slate-300 {
+  color: #334155 !important;
+}
+
+[data-theme="light"] .text-slate-400 {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+[data-theme="light"] .border-slate-700,
+[data-theme="light"] .border-slate-700\/40,
+[data-theme="light"] .border-slate-700\/50,
+[data-theme="light"] .border-slate-700\/60,
+[data-theme="light"] .border-slate-700\/80,
+[data-theme="light"] .border-slate-700\/30,
+[data-theme="light"] .border-slate-600\/40,
+[data-theme="light"] .border-slate-600\/50 {
+  border-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .bg-slate-700,
+[data-theme="light"] .bg-slate-700\/50,
+[data-theme="light"] .bg-slate-700\/40,
+[data-theme="light"] .bg-slate-700\/20,
+[data-theme="light"] .bg-slate-700\/30,
+[data-theme="light"] .bg-slate-700\/60 {
+  background-color: #f1f5f9 !important;
+}
+
+[data-theme="light"] .hover\:bg-slate-700\/20:hover,
+[data-theme="light"] .hover\:bg-slate-700\/30:hover,
+[data-theme="light"] .hover\:bg-slate-700\/40:hover {
+  background-color: #e2e8f0 !important;
+}
+
+[data-theme="light"] .from-slate-800 {
+  --tw-gradient-from: #ffffff !important;
+}
+
+[data-theme="light"] .to-\[\#141c2e\] {
+  --tw-gradient-to: #f8fafc !important;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: #475569;
   border-radius: 3px;
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
 }

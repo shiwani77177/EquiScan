@@ -5,6 +5,7 @@ import ScreenerPage from "./pages/ScreenerPage";
 import StocksPage from "./pages/StocksPage";
 import SectorsPage from "./pages/SectorsPage";
 import WatchlistPage from "./pages/WatchlistPage";
+import NewsPage from "./pages/NewsPage";
 import StockDetailPage from "./pages/StockDetailPage";
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/stocks" element={<StocksPage />} />
           <Route path="/sectors" element={<SectorsPage />} />
           <Route path="/watchlist" element={<WatchlistPage />} />
+          <Route path="/news" element={<NewsPage />} />
           <Route path="/stock/:ticker" element={<StockDetailPage />} />
         </Routes>
       </div>
