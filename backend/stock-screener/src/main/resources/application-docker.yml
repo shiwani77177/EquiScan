@@ -1,4 +1,4 @@
-# Docker profile 
+# Docker profile
 # Activates when SPRING_PROFILES_ACTIVE=docker (set in docker-compose)
 
 spring:
@@ -54,3 +54,6 @@ logging:
     root: INFO
     com.project.stock_screener: INFO
     org.springframework.web: WARN
+
+jwt:
+  secret: ${JWT_SECRET:equiscan-jwt-secret-key-2026-change-this-in-production-min-32-chars}
