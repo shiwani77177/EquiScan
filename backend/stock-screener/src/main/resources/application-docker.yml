@@ -10,6 +10,10 @@ spring:
       maximum-pool-size: 15
       minimum-idle: 5
       connection-timeout: 20000
+        autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
 
   jpa:
     hibernate:
@@ -27,11 +31,6 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-  data:
-    redis:
-      host: ${SPRING_REDIS_HOST}
-      port: ${SPRING_REDIS_PORT:6379}
-      timeout: 2000
 
 # Alpha Vantage API
 alphavantage:
