@@ -65,7 +65,7 @@ RUN mkdir -p /var/log/supervisor /var/lib/nginx/tmp \
     && chown -R appuser:appgroup /var/log/nginx \
     && chown -R appuser:appgroup /run/nginx || true
 
-EXPOSE 80
+EXPOSE 8080
 
 ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseG1GC -XX:+UseContainerSupport"
 
