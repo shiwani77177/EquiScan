@@ -1,5 +1,7 @@
 # Docker profile
 # Activates when SPRING_PROFILES_ACTIVE=docker (set in docker-compose)
+server:
+  port: ${PORT:8080}
 
 spring:
   datasource:
@@ -14,6 +16,11 @@ spring:
     exclude:
       - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
       - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+    web:
+    resources:
+      static-locations: file:./static/
+    mvc:
+      static-path-pattern: /**
 
   jpa:
     hibernate:
