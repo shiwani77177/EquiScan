@@ -1,26 +1,26 @@
-# Docker profile
-# Activates when SPRING_PROFILES_ACTIVE=docker (set in docker-compose)
 server:
   port: ${PORT:8080}
 
 spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
+
+  web:
+    resources:
+      static-locations: file:./static/,classpath:/static/
+  mvc:
+    static-path-pattern: /**
+
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
     password: ${SPRING_DATASOURCE_PASSWORD}
     hikari:
-      maximum-pool-size: 15
-      minimum-idle: 5
+      maximum-pool-size: 10
+      minimum-idle: 2
       connection-timeout: 20000
-        autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.redis.RedisReactiveAutoConfiguration
-    web:
-    resources:
-      static-locations: file:./static/
-    mvc:
-      static-path-pattern: /**
 
   jpa:
     hibernate:
@@ -38,13 +38,10 @@ spring:
     locations: classpath:db/migration
     baseline-on-migrate: true
 
-
-# Alpha Vantage API
 alphavantage:
-  api-key: ${ALPHAVANTAGE_API_KEY}
+  api-key: ${ALPHAVANTAGE_API_KEY:demo}
   base-url: https://www.alphavantage.co/query
 
-# Actuator
 management:
   endpoints:
     web:
@@ -54,7 +51,6 @@ management:
     health:
       show-details: always
 
-# Logging
 logging:
   level:
     root: INFO
@@ -63,3 +59,5 @@ logging:
 
 jwt:
   secret: ${JWT_SECRET:equiscan-jwt-secret-key-2026-change-this-in-production-min-32-chars}
+
+  
