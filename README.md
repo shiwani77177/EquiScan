@@ -20,7 +20,7 @@ Market overview with NIFTY 50, SENSEX, NIFTY BANK indices, sector performance ba
 
 Advanced screener with 3 preset strategies (Quality Growth, Deep Value, Momentum Breakout), sidebar filters with sector checkboxes, pagination, and sortable columns.
 
-![Screener](screenshots/screener.png)
+![Screener](screenshots/Image3.png)
 
 ### All Stocks
 
