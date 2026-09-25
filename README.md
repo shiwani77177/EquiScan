@@ -56,13 +56,13 @@ Side-by-side comparison of up to 5 stocks with highlighted best values (green) a
 
 Personal watchlist with search-to-add, live stock data, and one-click remove. Persists across sessions.
 
-![Watchlist](screenshots/watchlist.png)
+![Watchlist](screenshots/Image11.png)
 
 ### Market News
 
 12 curated market headlines with sector filter buttons, full summaries, source attribution, and related ticker tags.
 
-![News](screenshots/news.png)
+![News](screenshots/Image12.png)
 
 ---
 
