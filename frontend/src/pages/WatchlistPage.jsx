@@ -31,19 +31,15 @@ export default function WatchlistPage() {
   const [loading, setLoading] = useState(true);
   const searchRef = useRef(null);
 
-  // Load watchlist from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("equiscan-watchlist");
     if (saved) {
       try {
         setWatchlistTickers(JSON.parse(saved));
-      } catch (e) {
-        /* ignore */
-      }
+      } catch (e) {}
     }
   }, []);
 
-  // Save watchlist to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(
       "equiscan-watchlist",
@@ -51,7 +47,6 @@ export default function WatchlistPage() {
     );
   }, [watchlistTickers]);
 
-  // Load all stocks for search
   useEffect(() => {
     screenStocks([], { field: "market_cap", direction: "desc" }, 0, 200)
       .then((result) => setAllStocks(result.data || []))
@@ -59,18 +54,15 @@ export default function WatchlistPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
+      if (searchRef.current && !searchRef.current.contains(e.target))
         setShowDropdown(false);
-      }
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Search results (exclude already added)
   const searchResults = search.trim()
     ? allStocks
         .filter((s) => {
@@ -84,7 +76,6 @@ export default function WatchlistPage() {
         .slice(0, 6)
     : [];
 
-  // Get full stock data for watchlist tickers
   const watchlistStocks = watchlistTickers
     .map((w) => {
       const stock = allStocks.find((s) => s.ticker === w.ticker);
@@ -92,7 +83,6 @@ export default function WatchlistPage() {
     })
     .filter(Boolean);
 
-  // Add to watchlist
   const addStock = (stock) => {
     setWatchlistTickers((prev) => [
       { ticker: stock.ticker, addedAt: new Date().toISOString() },
@@ -102,7 +92,6 @@ export default function WatchlistPage() {
     setShowDropdown(false);
   };
 
-  // Remove from watchlist
   const removeStock = (ticker) => {
     setWatchlistTickers((prev) => prev.filter((w) => w.ticker !== ticker));
   };
@@ -116,7 +105,6 @@ export default function WatchlistPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
-      {/* Header */}
       <div>
         <h2 className="text-2xl font-extrabold text-white tracking-tight">
           Watchlist
@@ -127,14 +115,24 @@ export default function WatchlistPage() {
       </div>
 
       {/* ═══ Add to Watchlist ══════════════════════════ */}
-      <div className="bg-[#111827] border border-slate-700/40 rounded-xl p-6">
-        <h3 className="text-[15px] font-bold text-white mb-4">
-          Add to watchlist
-        </h3>
+      <div className="bg-gradient-to-r from-[#111827] to-[#0f1729] border border-slate-700/40 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-[15px] font-bold text-white">
+              Add to watchlist
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Search and add stocks you want to track
+            </p>
+          </div>
+          <span className="text-xs text-slate-500 bg-slate-800 px-3 py-1 rounded-full border border-slate-700">
+            {watchlistTickers.length} stocks tracked
+          </span>
+        </div>
 
         <div className="relative max-w-lg" ref={searchRef}>
           <svg
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -155,38 +153,44 @@ export default function WatchlistPage() {
             }}
             onFocus={() => setShowDropdown(true)}
             placeholder="Search company or ticker..."
-            className="w-full bg-slate-800 border border-slate-600/50 rounded-lg pl-10 pr-4 py-3
+            className="w-full bg-slate-800/80 border border-slate-600/40 rounded-xl pl-12 pr-4 py-3.5
                        text-sm text-slate-200 placeholder-slate-500
-                       focus:outline-none focus:border-green-500/50 focus:ring-1 focus:ring-green-500/20 transition-all"
+                       focus:outline-none focus:border-green-500/50 focus:ring-2 focus:ring-green-500/10 transition-all"
           />
 
-          {/* Dropdown results */}
           {showDropdown && searchResults.length > 0 && (
             <div
-              className="absolute top-full left-0 right-0 mt-1 bg-[#0f172a] border border-slate-700 rounded-lg 
-                            shadow-xl z-50 overflow-hidden max-w-lg"
+              className="absolute top-full left-0 right-0 mt-2 bg-[#0c1222] border border-slate-700 rounded-xl 
+                            shadow-2xl shadow-black/30 z-50 overflow-hidden max-w-lg"
             >
               {searchResults.map((s) => (
                 <button
                   key={s.ticker}
                   onClick={() => addStock(s)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-800 
-                             transition-colors cursor-pointer border-b border-slate-700/30 last:border-0 text-left"
+                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-slate-800/80 
+                             transition-colors cursor-pointer border-b border-slate-700/30 last:border-0 text-left group"
                 >
-                  <div>
-                    <p className="text-sm text-white font-medium">
-                      {s.companyName || cleanTicker(s.ticker)}
-                    </p>
-                    <p className="text-xs text-slate-500 font-mono">
-                      {cleanTicker(s.ticker)} · {s.sector}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                      <span className="text-green-400 text-xs font-bold">
+                        +
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-white font-medium group-hover:text-green-400 transition-colors">
+                        {s.companyName || cleanTicker(s.ticker)}
+                      </p>
+                      <p className="text-[11px] text-slate-500 font-mono">
+                        {cleanTicker(s.ticker)} · {s.sector}
+                      </p>
+                    </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm text-slate-300 font-medium">
                       {fmtPrice(s.price)}
                     </p>
                     <p
-                      className={`text-xs font-medium ${Number(s.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"}`}
+                      className={`text-[11px] font-semibold ${Number(s.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"}`}
                     >
                       {fmtPct(s.changePercent)}
                     </p>
@@ -196,11 +200,10 @@ export default function WatchlistPage() {
             </div>
           )}
 
-          {/* No results */}
           {showDropdown && search.trim() && searchResults.length === 0 && (
             <div
-              className="absolute top-full left-0 right-0 mt-1 bg-[#0f172a] border border-slate-700 rounded-lg 
-                            shadow-xl z-50 px-4 py-3"
+              className="absolute top-full left-0 right-0 mt-2 bg-[#0c1222] border border-slate-700 rounded-xl 
+                            shadow-2xl z-50 px-5 py-4"
             >
               <p className="text-sm text-slate-500">
                 No stocks found matching "{search}"
@@ -253,7 +256,6 @@ export default function WatchlistPage() {
                     key={s.ticker}
                     className="border-b border-slate-700/25 hover:bg-slate-700/20 transition-colors group"
                   >
-                    {/* Company + Ticker */}
                     <td
                       className="px-4 py-3.5 cursor-pointer"
                       onClick={() => navigate(`/stock/${s.ticker}`)}
@@ -265,33 +267,24 @@ export default function WatchlistPage() {
                         {cleanTicker(s.ticker)}
                       </p>
                     </td>
-
-                    {/* Price */}
                     <td
                       className="px-4 py-3.5 text-right text-slate-200 font-medium cursor-pointer"
                       onClick={() => navigate(`/stock/${s.ticker}`)}
                     >
                       {fmtPrice(s.price)}
                     </td>
-
-                    {/* Change% */}
                     <td
-                      className={`px-4 py-3.5 text-right font-semibold text-xs cursor-pointer
-                      ${Number(s.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"}`}
+                      className={`px-4 py-3.5 text-right font-semibold text-xs cursor-pointer ${Number(s.changePercent || 0) >= 0 ? "text-green-400" : "text-red-400"}`}
                       onClick={() => navigate(`/stock/${s.ticker}`)}
                     >
                       {fmtPct(s.changePercent)}
                     </td>
-
-                    {/* P/E */}
                     <td
                       className="px-4 py-3.5 text-right text-slate-300 cursor-pointer"
                       onClick={() => navigate(`/stock/${s.ticker}`)}
                     >
                       {fmtNum(s.peRatio)}
                     </td>
-
-                    {/* RSI */}
                     <td
                       className="px-4 py-3.5 text-right cursor-pointer"
                       onClick={() => navigate(`/stock/${s.ticker}`)}
@@ -308,8 +301,6 @@ export default function WatchlistPage() {
                         {fmtNum(s.rsi14)}
                       </span>
                     </td>
-
-                    {/* Market Cap */}
                     <td
                       className="px-4 py-3.5 text-right text-slate-300 text-xs cursor-pointer"
                       onClick={() => navigate(`/stock/${s.ticker}`)}
@@ -318,13 +309,9 @@ export default function WatchlistPage() {
                         ? `₹${(Number(s.marketCap) / 1e9).toFixed(0)} Cr`
                         : "—"}
                     </td>
-
-                    {/* Added Date */}
                     <td className="px-4 py-3.5 text-center text-slate-400 text-xs">
                       {fmtDate(s.addedAt)}
                     </td>
-
-                    {/* Remove Button */}
                     <td className="px-4 py-3.5 text-center">
                       <button
                         onClick={(e) => {
@@ -355,7 +342,7 @@ export default function WatchlistPage() {
         )}
       </div>
 
-      {/* ═══ Quick Stats (if watchlist has stocks) ════ */}
+      {/* ═══ Quick Stats ══════════════════════════════ */}
       {watchlistStocks.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-[#111827] border border-slate-700/40 rounded-xl p-4">
