@@ -85,7 +85,7 @@ export default function SectorsPage() {
       <div className="bg-[#111827] border border-slate-700/40 rounded-xl p-6">
         <h3 className="text-[15px] font-bold text-white mb-1">Stocks per Sector</h3>
         <p className="text-xs text-slate-500 mb-4">Distribution across sectors</p>
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={{ stroke: '#1e293b' }} />
             <YAxis tick={{ fill: '#64748b', fontSize: 11 }} tickLine={false} axisLine={false} />
