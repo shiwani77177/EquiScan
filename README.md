@@ -40,7 +40,9 @@ Individual stock page with fundamentals (P/E, EPS, ROE, Market Cap), technical i
 
 Sector analysis with distribution chart, clickable sector cards showing Avg P/E, Revenue Growth, and stock count.
 
-![Sectors](screenshots/sectors.png)
+|              Stocks Per Sector               |              All Sectors               |
+| :------------------------------------------: | :------------------------------------: |
+| ![Stocks Per Sector](screenshots/Image7.png) | ![All Sectors](screenshots/Image8.png) |
 
 ### Compare Stocks
 
