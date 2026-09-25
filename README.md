@@ -26,13 +26,15 @@ Advanced screener with 3 preset strategies (Quality Growth, Deep Value, Momentum
 
 Browse the full universe of NSE/BSE stocks with search, sort by any column, and pagination.
 
-![Stocks](screenshots/stocks.png)
+|              All Stocks               |              Selected Stock               |
+| :-----------------------------------: | :---------------------------------------: |
+| ![All Stocks](screenshots/Image4.png) | ![Selected Stock](screenshots/Image5.png) |
 
 ### Stock Detail
 
 Individual stock page with fundamentals (P/E, EPS, ROE, Market Cap), technical indicators (SMA, RSI, MACD), and interactive price history chart with time range selector.
 
-![Stock Detail](screenshots/stock-detail.png)
+![Price Graph](screenshots/Image6.png)
 
 ### Sectors
 
