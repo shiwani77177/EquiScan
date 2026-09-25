@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { path: "/screener", label: "Screener", icon: "🔍" },
   { path: "/stocks", label: "Stocks", icon: "📋" },
   { path: "/sectors", label: "Sectors", icon: "🏢" },
+  { path: "/compare", label: "Compare", icon: "⚖️" },
   { path: "/watchlist", label: "Watchlist", icon: "⭐" },
   { path: "/news", label: "News", icon: "📰" },
 ];
