@@ -12,7 +12,9 @@ A full-stack stock screening platform for the Indian market (NSE), built with **
 
 Market overview with NIFTY 50, SENSEX, NIFTY BANK indices, sector performance bars, market breadth donut chart, top gainers/losers, and latest market news.
 
-![Dashboard](C:\Users\shiwa\Desktop\Stock Screener\screenshots\Image1.png)
+|       Dashboard — Index Cards        |        Dashboard — Sector Performance         |
+| :----------------------------------: | :-------------------------------------------: |
+| ![Dashboard](screenshots/Image1.png) | ![Sector Performance](screenshots/Image2.png) |
 
 ### Stock Screener
 
