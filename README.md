@@ -48,7 +48,9 @@ Sector analysis with distribution chart, clickable sector cards showing Avg P/E,
 
 Side-by-side comparison of up to 5 stocks with highlighted best values (green) and radar chart visualization.
 
-![Compare](screenshots/compare.png)
+|              Comparison               |               Metric Radar               |
+| :-----------------------------------: | :--------------------------------------: |
+| ![Comparison](screenshots/Image9.png) | ![Metric Radar](screenshots/Image10.png) |
 
 ### Watchlist
 
